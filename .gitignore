@@ -1,0 +1,56 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+.next/
+out/
+build/
+*.tsbuildinfo
+
+# Turbo
+.turbo/
+
+# Env & secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+logs/
+
+# Editor / OS
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+.idea/
+Thumbs.db
+
+# Test / coverage
+coverage/
+playwright-report/
+test-results/
+
+# Claude Code local settings + auto-generated review graph
+.claude/settings.local.json
+.claude/crg/
+
+# Misc
+*.local
+tmp/
+mf-catch.json
+
+# Project artifacts not needed for the app or Vercel deploy
+# local reference screenshots
+reference/
+# standalone design prototype (never deployed)
+mailflow-redesign/
+# planning doc + its generator
+Velvety-Dawn-MailFlow-Plan.pdf
+_generate_plan_pdf.py
+# local dev/demo scripts (_sync-inbox, _seed-replies)
+apps/worker/src/_*.ts

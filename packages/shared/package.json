@@ -1,0 +1,25 @@
+{
+  "name": "@mailflow/shared",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./env": "./src/env.ts",
+    "./crypto": "./src/crypto.ts",
+    "./tracking-token": "./src/tracking-token.ts",
+    "./constants": "./src/constants.ts",
+    "./schemas": "./src/schemas/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint src --max-warnings 0",
+    "typecheck": "tsc --noEmit",
+    "clean": "rimraf dist .turbo"
+  },
+  "dependencies": {
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}

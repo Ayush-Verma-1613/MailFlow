@@ -1,0 +1,45 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": [".env"],
+  "globalEnv": [
+    "NODE_ENV",
+    "MONGODB_URI",
+    "REDIS_URL",
+    "AUTH_SECRET",
+    "AUTH_URL",
+    "NEXTAUTH_URL",
+    "GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET",
+    "ENCRYPTION_KEY",
+    "SYSTEM_SMTP_URL",
+    "SYSTEM_EMAIL_FROM",
+    "OPENROUTER_API_KEY",
+    "APP_URL",
+    "GMAIL_PUBSUB_TOPIC",
+    "GMAIL_PUBSUB_VERIFICATION_TOKEN",
+    "SENTRY_DSN",
+    "LOG_LEVEL"
+  ],
+  "tasks": {
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+    },
+    "lint": {
+      "dependsOn": ["^lint"]
+    },
+    "typecheck": {
+      "dependsOn": ["^build"]
+    },
+    "test": {
+      "dependsOn": ["^build"]
+    },
+    "clean": {
+      "cache": false
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "name": "@mailflow/db",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./models": "./src/models/index.ts",
+    "./crypto": "./src/crypto.ts"
+  },
+  "scripts": {
+    "lint": "eslint src --max-warnings 0",
+    "typecheck": "tsc --noEmit",
+    "clean": "rimraf dist .turbo"
+  },
+  "dependencies": {
+    "@mailflow/shared": "workspace:*",
+    "mongoose": "^8.9.5"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}
