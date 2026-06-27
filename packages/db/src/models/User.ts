@@ -14,6 +14,11 @@ export interface IUser {
   /** SHA-256 of the pending email-verification token (single-use). */
   verificationTokenHash?: string;
   verificationTokenExpires?: Date;
+  /** SHA-256 of the pending 6-digit email-verification OTP (single-use). */
+  otpHash?: string;
+  otpExpires?: Date;
+  /** Wrong-OTP attempts since the last code was issued (brute-force guard). */
+  otpAttempts?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -29,6 +34,9 @@ const userSchema = new Schema<IUser>(
     emailVerified: { type: Date },
     verificationTokenHash: { type: String, select: false },
     verificationTokenExpires: { type: Date },
+    otpHash: { type: String, select: false },
+    otpExpires: { type: Date },
+    otpAttempts: { type: Number, select: false },
   },
   { timestamps: true },
 );

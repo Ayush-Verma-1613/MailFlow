@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react';
@@ -12,8 +13,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 export function SignUpForm() {
+  const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [sentTo, setSentTo] = useState<string | null>(null);
+  const [code, setCode] = useState('');
+  const [verifying, setVerifying] = useState(false);
 
   const {
     register,
@@ -50,21 +54,56 @@ export function SignUpForm() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: sentTo }),
     });
-    toast.success('Verification email sent');
+    toast.success('New code sent');
+  }
+
+  async function verifyOtp(e: React.FormEvent) {
+    e.preventDefault();
+    if (!sentTo) return;
+    setVerifying(true);
+    try {
+      const res = await fetch('/api/auth/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: sentTo, code }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        toast.error(body?.error?.message ?? 'Invalid or expired code');
+        return;
+      }
+      toast.success('Email verified — you can sign in now');
+      router.push('/signin');
+    } finally {
+      setVerifying(false);
+    }
   }
 
   if (sentTo) {
     return (
-      <div className="space-y-4 text-center">
-        <h2 className="text-lg font-medium">Check your email</h2>
+      <form onSubmit={verifyOtp} className="space-y-4 text-center">
+        <h2 className="text-lg font-medium">Enter your code</h2>
         <p className="text-muted-foreground text-sm">
-          We sent a verification link to <strong>{sentTo}</strong>. Click it to activate your
-          account, then sign in.
+          We sent a 6-digit code to <strong>{sentTo}</strong> (or click the link in the same email).
+          Enter the code to activate your account.
         </p>
-        <Button variant="outline" className="w-full" onClick={resend}>
-          Resend verification email
+        <Input
+          inputMode="numeric"
+          autoComplete="one-time-code"
+          maxLength={6}
+          placeholder="123456"
+          value={code}
+          onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
+          className="text-center text-lg tracking-[0.4em]"
+        />
+        <Button type="submit" className="w-full" disabled={verifying || code.length !== 6}>
+          {verifying && <Loader2 className="size-4 animate-spin" />}
+          Verify email
         </Button>
-      </div>
+        <Button type="button" variant="outline" className="w-full" onClick={resend}>
+          Resend code
+        </Button>
+      </form>
     );
   }
 

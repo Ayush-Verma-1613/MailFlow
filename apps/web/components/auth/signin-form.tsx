@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { signIn } from 'next-auth/react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { signInSchema, type SignInInput } from '@mailflow/shared';
@@ -14,9 +14,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 export function SignInForm() {
-  const router = useRouter();
   const params = useSearchParams();
-  const callbackUrl = params.get('callbackUrl') ?? '/dashboard';
+  // Only honour same-origin relative callbacks; an absolute URL here (e.g. a
+  // wrong-port one injected via ?callbackUrl=) would redirect users off-site.
+  const rawCallback = params.get('callbackUrl');
+  const callbackUrl = rawCallback && rawCallback.startsWith('/') ? rawCallback : '/dashboard';
   const [submitting, setSubmitting] = useState(false);
 
   const {
@@ -34,8 +36,9 @@ export function SignInForm() {
       toast.error('Invalid email or password');
       return;
     }
-    router.push(callbackUrl);
-    router.refresh();
+    // Hard navigation so the just-set session cookie is guaranteed to be sent on
+    // the next request (a soft router.push can race the cookie write).
+    window.location.assign(callbackUrl);
   }
 
   return (

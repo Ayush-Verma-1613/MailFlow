@@ -3,7 +3,7 @@ import { rateLimit } from '@mailflow/queue';
 import { verifyResendSchema } from '@mailflow/shared';
 
 import { clientIp, ok, parseBody, tooManyRequests } from '@/lib/api';
-import { dispatchVerificationEmail, generateVerificationToken } from '@/lib/verification';
+import { dispatchOtpEmail, generateOtp, generateVerificationToken } from '@/lib/verification';
 
 /** Resend a verification email. Always responds generically (no account enumeration). */
 export async function POST(req: Request) {
@@ -20,11 +20,20 @@ export async function POST(req: Request) {
     const user = await User.findOne({ email: parsed.data.email }).select('_id name emailVerified');
     if (user && !user.emailVerified) {
       const verify = generateVerificationToken();
+      const otp = generateOtp();
       await User.updateOne(
         { _id: user._id },
-        { $set: { verificationTokenHash: verify.hash, verificationTokenExpires: verify.expires } },
+        {
+          $set: {
+            verificationTokenHash: verify.hash,
+            verificationTokenExpires: verify.expires,
+            otpHash: otp.hash,
+            otpExpires: otp.expires,
+            otpAttempts: 0,
+          },
+        },
       );
-      await dispatchVerificationEmail(parsed.data.email, user.name ?? null, verify.raw);
+      await dispatchOtpEmail(parsed.data.email, user.name ?? null, otp.raw, verify.raw);
     }
   } catch (error) {
     console.error('[verify/resend] error:', error);

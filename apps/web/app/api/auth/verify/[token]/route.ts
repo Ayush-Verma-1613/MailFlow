@@ -22,7 +22,13 @@ export async function GET(_req: Request, ctx: { params: Promise<{ token: string 
         },
         {
           $set: { emailVerified: new Date() },
-          $unset: { verificationTokenHash: '', verificationTokenExpires: '' },
+          $unset: {
+            verificationTokenHash: '',
+            verificationTokenExpires: '',
+            otpHash: '',
+            otpExpires: '',
+            otpAttempts: '',
+          },
         },
       );
       if (res.modifiedCount === 0) {

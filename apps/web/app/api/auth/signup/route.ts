@@ -4,7 +4,7 @@ import { rateLimit } from '@mailflow/queue';
 
 import { clientIp, conflict, ok, parseBody, serverError, tooManyRequests } from '@/lib/api';
 import { createUserWithOrg } from '@/lib/auth-service';
-import { dispatchVerificationEmail } from '@/lib/verification';
+import { dispatchOtpEmail } from '@/lib/verification';
 
 /** Public registration: creates a user and their org. */
 export async function POST(req: Request) {
@@ -23,9 +23,10 @@ export async function POST(req: Request) {
   try {
     await connectToDatabase();
     const user = await createUserWithOrg(parsed.data);
-    // Email the verification link (logged when no system SMTP is configured).
-    if (user.verificationToken) {
-      await dispatchVerificationEmail(user.email, user.name, user.verificationToken);
+    // Email the 6-digit OTP, with the verification link as a fallback (both work).
+    // Logged to the server when no system SMTP is configured.
+    if (user.otp) {
+      await dispatchOtpEmail(user.email, user.name, user.otp, user.verificationToken);
     }
     return ok(
       {

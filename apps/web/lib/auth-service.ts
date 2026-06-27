@@ -7,7 +7,7 @@ import bcrypt from 'bcryptjs';
 import { connectToDatabase, Membership, Org, User, mongoose } from '@mailflow/db';
 import type { SignUpInput } from '@mailflow/shared';
 import { slugify, randomToken } from './slug';
-import { generateVerificationToken } from './verification';
+import { generateVerificationToken, generateOtp } from './verification';
 
 export interface ProvisionedUser {
   id: string;
@@ -19,8 +19,8 @@ export interface ProvisionedUser {
   emailVerified: boolean;
 }
 
-/** A freshly-created credentials user also carries its one-time verify token. */
-export type CreatedUser = ProvisionedUser & { verificationToken?: string };
+/** A freshly-created credentials user also carries its one-time verify token + OTP. */
+export type CreatedUser = ProvisionedUser & { verificationToken?: string; otp?: string };
 
 /** Generate an org slug that is unique across the collection. */
 async function uniqueSlug(base: string): Promise<string> {
@@ -55,6 +55,7 @@ export async function createUserWithOrg(
   // Credentials signups must verify their email; OAuth-provisioned users are
   // pre-verified by the identity provider (see ensureOAuthUser).
   const verify = opts?.emailVerified ? null : generateVerificationToken();
+  const otp = opts?.emailVerified ? null : generateOtp();
 
   const session = await mongoose.startSession();
   try {
@@ -78,6 +79,9 @@ export async function createUserWithOrg(
             emailVerified: opts?.emailVerified ? new Date() : undefined,
             verificationTokenHash: verify?.hash,
             verificationTokenExpires: verify?.expires,
+            otpHash: otp?.hash,
+            otpExpires: otp?.expires,
+            otpAttempts: otp ? 0 : undefined,
           },
         ],
         { session },
@@ -99,6 +103,7 @@ export async function createUserWithOrg(
         role: 'admin',
         emailVerified: Boolean(opts?.emailVerified),
         verificationToken: verify?.raw,
+        otp: otp?.raw,
       };
     });
 
